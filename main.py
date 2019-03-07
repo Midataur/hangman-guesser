@@ -34,13 +34,30 @@ def whittle(wordlist,known,not_pool):
             new.append(x)
     return new
 
+def get_last_working(knowns,howfar,og_wordlist:
+    if abs(howfar) > len(knowns):
+        return og_wordlist
+    known = knowns[howfar][0]
+    not_pool = knowns[howfar][1]
+    wordlist = whittle(og_wordlist,known,not_pool)
+    freqs = get_freqs(wordlist)
+    most_common = None
+    for x in freqs:
+        if x[1] not in not_pool:
+            most_common = x[1]
+            break
+    if most_common == None:
+        return get_last_working(knowns,howfar-1,og_wordlist)
+    return wordlist
+
 tries = 0
-guesshold = 14
+guesshold = 10
 won = False
 
 #get word template
 known = ['_' for x in range(int(raw_input('How long is your word?: ')))]
 not_pool = []
+knowns = [list(known)]
 
 while tries < guesshold and won == False:
     #whittle down possibilites
@@ -54,8 +71,7 @@ while tries < guesshold and won == False:
             break
     #this only happens if we're dealing with a word not in the database
     if most_common == None:
-        wordlist = list(og_wordlist)
-        wordlist = whittle(wordlist,['_' for x in range(len(known))],[])
+        wordlist = get_last_working(knowns,-1,og_wordlist)
         freqs = get_freqs(wordlist)
         most_common = None
         for x in freqs:
@@ -74,6 +90,7 @@ while tries < guesshold and won == False:
         #slot found into known
         places = raw_input('What places is it in? (type each place seperated by a space): ').split()
         for x in places:
+            knowns.append([list(known),list(not_pool)])
             known[int(x)-1] = most_common
             not_pool.append(most_common)
         if '_' not in known:
